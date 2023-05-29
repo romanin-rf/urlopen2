@@ -58,17 +58,20 @@ class URLFile(IOBase):
             self._buffer.seek(0, 2)
             while len(data:=self._furl.read(65536)) > 0:
                 self._buffer.write(data)
+            self._furl.close()
             self._full = True
-            self._buffer.close()
             self._buffer.seek(ct)
     
     def read(self, n: int=-1):
         if n is None:
             n = -1
-        if (n > 0) and (not self._full):
-            s = n - (self._getsize() - self.tell())
-            if s > 0:
-                self._topload(s)
+        if not self._full:
+            if n > 0:
+                s = n - (self._getsize() - self.tell())
+                if s > 0:
+                    self._topload(s)
+            elif n < 0:
+                self._fullload()
         return self._buffer.read(n)
     
     def seek(self, offset: int, whence: int=0) -> None:
