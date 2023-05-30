@@ -11,7 +11,9 @@ pip install urlopen2
 ```python
 from urlopen2 import URLFile
 
-with URLFile("https://example.com/file.bin") as f:
+url = "https://example.com/file.bin"
+
+with URLFile(url) as f:
     f.read(128)
     # In this case, 128 bytes of the file will be loaded.
     f.seek(0)

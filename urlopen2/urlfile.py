@@ -1,10 +1,10 @@
-from io import IOBase, BytesIO, BufferedRandom
 from urllib.request import urlopen
+from io import BytesIO, BufferedRandom, RawIOBase
 # > Typing
 from typing import Optional, Union
 
 # ! Main
-class URLFile(IOBase):
+class URLFile(RawIOBase):
     def __init__(
         self,
         url: str,
@@ -20,7 +20,7 @@ class URLFile(IOBase):
     @property
     def name(self) -> str: return self._name
     @property
-    def mode(self) -> str: return "r"
+    def mode(self) -> str: return "rb"
     @property
     def closed(self) -> bool: return self._buffer.closed
     @property
@@ -62,7 +62,7 @@ class URLFile(IOBase):
             self._full = True
             self._buffer.seek(ct)
     
-    def read(self, n: int=-1):
+    def read(self, n: int=-1) -> bytes:
         if n is None:
             n = -1
         if not self._full:
@@ -74,7 +74,7 @@ class URLFile(IOBase):
                 self._fullload()
         return self._buffer.read(n)
     
-    def seek(self, offset: int, whence: int=0) -> None:
+    def seek(self, offset: int, whence: int=0) -> int:
         if (offset > 0) and (not self._full):
             if whence == 0:
                 s = self._getsize() - offset
@@ -86,4 +86,4 @@ class URLFile(IOBase):
                     self._topload(s)
             elif whence == 2:
                 self._fullload()
-        self._buffer.seek(offset, whence)
+        return self._buffer.seek(offset, whence)
