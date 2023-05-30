@@ -1,6 +1,6 @@
 # urlopen2
 ## Description
-Improvement for the `urlopen` function.request.
+Improvement for the `urllib.request.urlopen` function.
 
 ## Install
 ```shell
