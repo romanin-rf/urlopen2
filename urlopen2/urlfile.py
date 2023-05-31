@@ -1,7 +1,27 @@
 from urllib.request import urlopen
 from io import BytesIO, BufferedRandom, RawIOBase
 # > Typing
-from typing import Optional, Union
+from typing import Optional, Union, Any
+
+# ! Type Alias
+WriteableBuffer = Union[bytearray, memoryview, Any]
+
+class URLOpenRet:
+    url: str
+    code: int
+    status: int
+    closed: bool
+    chunked: bool
+    will_close: bool
+    length: Optional[int]
+
+    def read(self, n: int=-1) -> bytes: ...
+    def read1(self, n: int=-1) -> bytes: ...
+    def readinto(self, b: WriteableBuffer) -> int: ...
+    def readinto1(self, b: WriteableBuffer) -> int: ...
+
+    def isclosed(self) -> bool: ...
+    def close(self) -> None: ...
 
 # ! Main
 class URLFile(RawIOBase):
@@ -14,9 +34,13 @@ class URLFile(RawIOBase):
     ) -> None:
         self._name = url
         self._buffer = buffer or BytesIO()
-        self._furl = urlopen(self._name, **kwargs)
+        self._furl: URLOpenRet = urlopen(self._name, **kwargs)
         self._full: bool = False
     
+    @property
+    def length(self) -> Optional[int]: return self._furl.length
+    @property
+    def downloaded(self) -> int: return self._getsize()
     @property
     def name(self) -> str: return self._name
     @property
@@ -62,6 +86,8 @@ class URLFile(RawIOBase):
             self._full = True
             self._buffer.seek(ct)
     
+    def fulling(self) -> None: self._fullload()
+    
     def read(self, n: int=-1) -> bytes:
         if n is None:
             n = -1
@@ -85,5 +111,12 @@ class URLFile(RawIOBase):
                 if s > 0:
                     self._topload(s)
             elif whence == 2:
-                self._fullload()
+                if (self.length is not None) and (self.length != 0):
+                    s = self.length - self._getsize() - offset
+                    if s > 0:
+                        self._topload(s)
+                    else:
+                        self._fullload()
+                else:
+                    self._fullload()
         return self._buffer.seek(offset, whence)
