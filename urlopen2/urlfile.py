@@ -1,28 +1,13 @@
+from tempfile import mkstemp
 from urllib.request import urlopen
-from io import BytesIO, BufferedRandom, RawIOBase
+from io import BytesIO, BufferedRandom, IOBase
 # > Typing
 from typing import Optional, Union
+# > Local Imports
+from .types import URLOpenRet
 
-# ! Type Alias
-class URLOpenRet:
-    url: str
-    code: int
-    status: int
-    closed: bool
-    chunked: bool
-    will_close: bool
-    length: Optional[int]
-
-    def read(self, n: int=-1) -> bytes: ...
-    def read1(self, n: int=-1) -> bytes: ...
-    def readinto(self, b) -> int: ...
-    def readinto1(self, b) -> int: ...
-
-    def isclosed(self) -> bool: ...
-    def close(self) -> None: ...
-
-# ! Main
-class URLFile(RawIOBase):
+# ! Main Class
+class URLFile(IOBase):
     def __init__(
         self,
         url: str,
@@ -31,7 +16,7 @@ class URLFile(RawIOBase):
         **kwargs
     ) -> None:
         self._name = url
-        self._buffer = buffer or BytesIO()
+        self._buffer = buffer or open(mkstemp(".bin")[1], "wb+")
         self._furl: URLOpenRet = urlopen(self._name, **kwargs)
         self._full: bool = False
     
@@ -86,9 +71,8 @@ class URLFile(RawIOBase):
     
     def fulling(self) -> None: self._fullload()
     
-    def read(self, n: int=-1) -> bytes:
-        if n is None:
-            n = -1
+    def read(self, n: Optional[int]=-1) -> bytes:
+        n = n or -1
         if not self._full:
             if n > 0:
                 s = n - (self._getsize() - self.tell())
