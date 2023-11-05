@@ -1,24 +1,25 @@
 from io import IOBase
 from aiofiles.threadpool.binary import AsyncBufferedReader
 # > Typing
-from typing import Optional
+from typing import Optional, Tuple, Literal
 
 # ! Main Class
 class AsyncURLFile(IOBase):
     async def __init__(
         self,
         url: str,
-        *,
-        buffer: Optional[AsyncBufferedReader]=None,
+        buffer: AsyncBufferedReader,
         **kwargs
     ) -> None: ...
     
-    async def open(
-        self,
+    @staticmethod
+    def open(
         url: str,
-        *,
-        buffer: Optional[AsyncBufferedReader]=None
+        buffer: AsyncBufferedReader
     ) -> AsyncURLFile: ...
+
+    @staticmethod
+    def gbuf() -> Tuple[str, Literal['wb+']]: ...
     
     @property
     def length(self) -> Optional[int]: ...

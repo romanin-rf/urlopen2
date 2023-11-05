@@ -1,12 +1,11 @@
 import asyncio
-import aiofiles
 from io import IOBase
 from tempfile import mkstemp
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor
 from aiofiles.threadpool.binary import AsyncBufferedReader
 # > Typing
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Tuple
 # > Local Import's
 from .types import URLOpenRet
 
@@ -30,13 +29,15 @@ class AsyncURLFile(IOBase):
         self._full: bool = False
     
     @staticmethod
-    async def open(
+    def open(
         url: str,
-        *,
-        buffer: Optional[AsyncBufferedReader]=None
+        buffer: AsyncBufferedReader
     ):
-        async with aiofiles.open(mkstemp(".bin")[1], "wb+") as file:
-            return AsyncURLFile(url, file)
+        return AsyncURLFile(url, buffer)
+    
+    @staticmethod
+    def gbuf() -> Tuple[str, str]:
+        return mkstemp(".bin")[1], "wb+"
     
     @property
     def length(self) -> Optional[int]: return self._furl.length
@@ -57,7 +58,9 @@ class AsyncURLFile(IOBase):
     def readable(self) -> bool: return True
     def seekable(self) -> bool: return True
     def writable(self) -> bool: return False
-    async def tell(self) -> int: return await self._buffer.tell()
+
+    async def tell(self) -> int:
+        return await self._buffer.tell()
     
     async def close(self) -> None:
         await self._buffer.close()
@@ -91,7 +94,8 @@ class AsyncURLFile(IOBase):
             self._full = True
             await self._buffer.seek(ct)
     
-    async def fulling(self) -> None: await self._fullload()
+    async def fulling(self) -> None:
+        await self._fullload()
     
     async def read(self, n: Optional[int]=-1) -> bytes:
         n = n or -1
