@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "urlopen2"
-version = "1.2.0.post1"
+version = "1.3.0.dev1"
 keywords = ["urlopen", "urllib.request", "urlfile", "readable", "seekable"]
 description = "Improvement for the `urllib.request.urlopen` function."
 authors = ["Romanin <semina054@gmail.com>"]
@@ -9,7 +9,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-
+asyncio = ">=3.4.0"
+aiofiles = ">=23.0.0"
 
 [build-system]
 requires = ["poetry-core"]
