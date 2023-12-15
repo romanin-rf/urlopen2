@@ -6,11 +6,18 @@ class URLFile(IOBase):
     def __init__(
         self,
         url: str,
+        buffer: IO[bytes],
+        **kwargs
+    ) -> None: ...
+    
+    @staticmethod
+    def open(
+        url: str,
         *,
         buffer: Optional[IO[bytes]]=None,
         **kwargs
     ) -> None: ...
-    
+
     @property
     def length(self) -> Optional[int]: ...
     @property

@@ -11,14 +11,23 @@ class URLFile(IOBase):
     def __init__(
         self,
         url: str,
+        buffer: Union[BytesIO, BufferedRandom],
+        **kwargs
+    ) -> None:
+        self._name = url
+        self._buffer = buffer
+        self._furl: URLOpenRet = urlopen(self._name, **kwargs)
+        self._full: bool = False
+    
+    @staticmethod
+    def open(
+        url: str,
         *,
         buffer: Optional[Union[BytesIO, BufferedRandom]]=None,
         **kwargs
     ) -> None:
-        self._name = url
-        self._buffer = buffer or open(mkstemp(".bin")[1], "wb+")
-        self._furl: URLOpenRet = urlopen(self._name, **kwargs)
-        self._full: bool = False
+        buffer = buffer or open(mkstemp(".bin")[1], "wb+")
+        return URLFile(url, buffer, **kwargs)
     
     @property
     def length(self) -> Optional[int]: return self._furl.length
